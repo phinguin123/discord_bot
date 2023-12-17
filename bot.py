@@ -5,7 +5,7 @@ import pytz
 from discord.ext import commands
 from time import sleep
 
-with open('bot_token.txt', 'r') as file:
+with open('/home/ubuntu/discord_bot/bot_token.txt', 'r') as file:
     token = file.readline()
 
 TOKEN = token
@@ -13,7 +13,7 @@ CHANNEL_ID = '1175798021104095302'
 
 users = []
 
-MIDNIGHT = datetime(2023,12,18,3,31)
+MIDNIGHT = datetime(2023,12,18,0,0)
 seoul_timezone = pytz.timezone('Asia/Seoul')
 def get_current_time():
     # Get the current time
@@ -30,7 +30,7 @@ class User:
 		self.total_time = 0
 		self.start = 0
     
-	def reset():
+	def reset(self):
 		self.total_time = 0
 
 
@@ -38,6 +38,7 @@ class MyClient(discord.Client):
 	async def on_ready(self):
 		channel = self.get_channel(int(CHANNEL_ID))
 		await channel.send('Hello World')
+		await self.background_task()
 
 	async def on_message(self, message):
 		if message.author == self.user:
@@ -60,39 +61,36 @@ class MyClient(discord.Client):
                     #await channel.send(user.total_time)
 				else:
 					user.total_time += get_current_time() - user.start
-					await channel.send(user.total_time)
+					#await channel.send(user.total_time)
 	
-async def called_once_a_day():
-	sleep(1)
-	#await client.wait_until_ready()
-	channel = client.get_channel(int(CHANNEL_ID))
-	await channel.send("Past Midnight")
-	for user in users:
-		await channel.send(user.name,user.total_time,"/ 6 hours")
-		user.reset()
+	async def called_once_a_day(self):
+		print(self)
+		#await self.wait_until_ready()
+		print("Inside called once a day")
+		channel = self.get_channel(int(CHANNEL_ID))
+		await channel.send("Past Midnight")
+		for user in users:
+			await channel.send("{0}    {1} / 6시간".format(user.name,user.total_time/3600))
+			user.reset()
 	
-async def background_task():
-	now = datetime.now(seoul_timezone).replace(tzinfo=None)
-	if now.time() > MIDNIGHT.time():  # Make sure loop doesn't start after {WHEN} as then it will send immediately the first time as negative seconds will make the sleep yield instantly
-		print("Inside if statement")
-		tomorrow = datetime.combine(now.date() + timedelta(days=1), time(0))
-		seconds = (tomorrow - now).total_seconds()  # Seconds until tomorrow (midnight)
-		await asyncio.sleep(seconds)   # Sleep until tomorrow and then the loop will start 
-	while True:
-		now = datetime.now(seoul_timezone).replace(tzinfo=None) # You can do now() or a specific timezone if that matters, but I'll leave it with utcnow
-		target_time = datetime.combine(now.date(), MIDNIGHT.time())  # 6:00 PM today (In UTC)
-		seconds_until_target = (target_time - now).total_seconds()
-		await asyncio.sleep(seconds_until_target)  # Sleep until we hit the target time
-		await called_once_a_day()  # Call the helper function that sends the message
-		tomorrow = datetime.combine(now.date() + timedelta(days=1), time(0))
-		seconds = (tomorrow - now).total_seconds()  # Seconds until tomorrow (midnight)
-		await asyncio.sleep(seconds)   # Sleep until tomorrow and then the loop will start a new iteration
- 
-
-		#else:
-        #    answer = self.get_answer(message.content)
-        #    await message.channel.send(answer)
- 
+	async def background_task(self):
+		now = datetime.now(seoul_timezone).replace(tzinfo=None)
+		if now.time() > MIDNIGHT.time():  # Make sure loop doesn't start after {WHEN} as then it will send immediately the first time as negative seconds will make the sleep yield instantly
+			print("Inside if statement")
+			print(now.time(),MIDNIGHT.time())
+			tomorrow = datetime.combine(now.date() + timedelta(days=1), time(0))
+			seconds = (tomorrow - now).total_seconds()  # Seconds until tomorrow (midnight)
+			await asyncio.sleep(seconds)   # Sleep until tomorrow and then the loop will start 
+		while True:
+			now = datetime.now(seoul_timezone).replace(tzinfo=None) # You can do now() or a specific timezone if that matters, but I'll leave it with utcnow
+			target_time = datetime.combine(now.date(), MIDNIGHT.time())  # 6:00 PM today (In UTC)
+			seconds_until_target = (target_time - now).total_seconds()
+			print(seconds_until_target)
+			await asyncio.sleep(seconds_until_target)  # Sleep until we hit the target time
+			await self.called_once_a_day()  # Call the helper function that sends the message
+			tomorrow = datetime.combine(now.date() + timedelta(days=1), time(0))
+			seconds = (tomorrow - now).total_seconds()  # Seconds until tomorrow (midnight)
+			await asyncio.sleep(seconds)   # Sleep until tomorrow and then the loop will start a new iteration
 
 # creating users
 # phinguin
@@ -109,13 +107,6 @@ users.append(user5)
 
 intents = discord.Intents.default()
 intents.message_content = True
-#client = MyClient(intents=intents)
+client = MyClient(intents=intents)
+client.run(TOKEN)
 
-async def main():
-	client = MyClient(intents=intents)
-	await background_task()
-	await client.run(TOKEN)
-
-asyncio.run(main())
-# adding users
-# add_user(269673731721396225, "민댜")
