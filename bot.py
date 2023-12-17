@@ -1,6 +1,9 @@
 import discord
- 
-TOKEN = 'MTE3NTM2OTA2NzU2MjAyOTA4Nw.GYaSTZ.wLCykJ6IiAWlJbciZYNTz7bKaE1Ur1Edyr1_Lo'
+
+with open('bot_token.txt', 'r') as file:
+    token = file.readline()
+
+TOKEN = token
 CHANNEL_ID = '1175798021104095302'
  
  
