@@ -13,7 +13,7 @@ CHANNEL_ID = '1175798021104095302'
 
 users = []
 
-MIDNIGHT = datetime(2023,12,18,4,58)
+MIDNIGHT = datetime(2023,12,18,0,0)
 seoul_timezone = pytz.timezone('Asia/Seoul')
 def get_current_time():
     # Get the current time
