@@ -13,7 +13,7 @@ CHANNEL_ID = '1175798021104095302'
 
 users = []
 
-MIDNIGHT = datetime(2023,12,18,4,58)
+MIDNIGHT = datetime(2023,12,18,5,0)
 seoul_timezone = pytz.timezone('Asia/Seoul')
 def get_current_time():
     # Get the current time
@@ -41,15 +41,15 @@ class MyClient(discord.Client):
         await self.background_task()
 
     async def on_message(self, message):
+        #print('inside on message')
         if message.author == self.user:
             #await message.channel.send("hello {0.author.mention}".format(message))
             return
 
-        for id in users:
-            if message.author.id == id and message.content == str(message.author):
-                await message.channel.send('pong {0.author.mention}'.format(message))
-                await message.channel.send(message.author.id)
-                await message.channel.send(message.author.mention)
+        for user in users:
+            if message.content == "!"+user.name.lower():
+
+                await message.channel.send("{0}    {1:.2f} / 6시간".format(user.name,user.total_time/3600))
                 return
 
     async def on_voice_state_update(self, member, before, after):
@@ -61,18 +61,18 @@ class MyClient(discord.Client):
                     #await channel.send(user.total_time)
                 else:
                     user.total_time += get_current_time() - user.start
-                    #await channel.send(user.total_time)
+                    #await channel.send(user.total_time/3600)
     
     async def called_once_a_day(self):
-        print(self)
+        #print(self)
         #await self.wait_until_ready()
-        print("Inside called once a day")
+        #print("Inside called once a day")
         channel = self.get_channel(int(CHANNEL_ID))
         allowed_mentions = discord.AllowedMentions(everyone = True)
         await channel.send(content = "@everyone", allowed_mentions = allowed_mentions)
         await channel.send("Past Midnight")
         for user in users:
-            await channel.send("{0}    {1} / 6시간".format(user.name,user.total_time/3600))
+            await channel.send("{0}    {1:.2f} / 6시간".format(user.name,user.total_time/3600))
             user.reset()
     
     async def background_task(self):
@@ -93,7 +93,12 @@ class MyClient(discord.Client):
             tomorrow = datetime.combine(now.date() + timedelta(days=1), time(0))
             seconds = (tomorrow - now).total_seconds()  # Seconds until tomorrow (midnight)
             await asyncio.sleep(seconds)   # Sleep until tomorrow and then the loop will start a new iteration
-
+        
+        """for user in users:
+            if name == user.name:
+                channel = self.get_channel(1175368705715208255)
+                await channel.send("{0}    {1} / 6시간".format(user.name,user.total_time/3600))
+"""
 # creating users
 # phinguin
 user1 = User(624839394117025793, "phinguin")
@@ -107,8 +112,10 @@ users.append(user4)
 user5 = User(372665460032012288, "kio")
 users.append(user5)
 
+
+
 intents = discord.Intents.default()
 intents.message_content = True
+bot = commands.Bot(command_prefix="!", intents=intents)
 client = MyClient(intents=intents)
 client.run(TOKEN)
-
