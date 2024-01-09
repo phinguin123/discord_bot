@@ -13,7 +13,7 @@ CHANNEL_ID = '1175798021104095302'
 
 users = []
 
-MIDNIGHT = datetime(2023,12,18,5,0)
+MIDNIGHT = datetime(2023,12,18,0,0)
 seoul_timezone = pytz.timezone('Asia/Seoul')
 def get_current_time():
     # Get the current time
@@ -32,12 +32,13 @@ class User:
     
     def reset(self):
         self.total_time = 0
+        self.start = 0
 
 
 class MyClient(discord.Client):
     async def on_ready(self):
         channel = self.get_channel(int(CHANNEL_ID))
-        await channel.send('Hello World')
+        await channel.send('Bot started')
         await self.background_task()
 
     async def on_message(self, message):
@@ -58,10 +59,12 @@ class MyClient(discord.Client):
                 channel = self.get_channel(int(CHANNEL_ID))
                 if before.channel is None and after.channel is not None:
                     user.start = get_current_time()
-                    #await channel.send(user.total_time)
+ #                   await channel.send("You entered the channel")
                 else:
                     user.total_time += get_current_time() - user.start
-                    #await channel.send(user.total_time/3600)
+                    await channel.send("current_time",user.total_time,"start time",user.start)
+#                    await channel.send("You left the channel")
+                    
     
     async def called_once_a_day(self):
         #print(self)
@@ -69,9 +72,10 @@ class MyClient(discord.Client):
         #print("Inside called once a day")
         channel = self.get_channel(int(CHANNEL_ID))
         allowed_mentions = discord.AllowedMentions(everyone = True)
-        await channel.send(content = "@everyone", allowed_mentions = allowed_mentions)
+        await channel.send(content = "everyone", allowed_mentions = allowed_mentions)
         await channel.send("Past Midnight")
         for user in users:
+            user.total_time += 86400 - user.start
             await channel.send("{0}    {1:.2f} / 6시간".format(user.name,user.total_time/3600))
             user.reset()
     
@@ -84,6 +88,7 @@ class MyClient(discord.Client):
             seconds = (tomorrow - now).total_seconds()  # Seconds until tomorrow (midnight)
             await asyncio.sleep(seconds)   # Sleep until tomorrow and then the loop will start 
         while True:
+
             now = datetime.now(seoul_timezone).replace(tzinfo=None) # You can do now() or a specific timezone if that matters, but I'll leave it with utcnow
             target_time = datetime.combine(now.date(), MIDNIGHT.time())  # 6:00 PM today (In UTC)
             seconds_until_target = (target_time - now).total_seconds()
