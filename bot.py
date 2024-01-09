@@ -75,6 +75,7 @@ class MyClient(discord.Client):
         await channel.send(content = "everyone", allowed_mentions = allowed_mentions)
         await channel.send("Past Midnight")
         for user in users:
+            await channel.send("start {0} total {1}".format(user.start,user.total_time))
             user.total_time += 86400 - user.start
             await channel.send("{0}    {1:.2f} / 6시간".format(user.name,user.total_time/3600))
             user.reset()
