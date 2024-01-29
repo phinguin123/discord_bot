@@ -59,12 +59,18 @@ class MyClient(discord.Client):
                 channel = self.get_channel(int(CHANNEL_ID))
                 if before.channel is None and after.channel is not None:
                     user.start = get_current_time()
- #                   await channel.send("You entered the channel")
-                else:
+                    #await channel.send("You entered the channel")
+                elif after.channel is None:
                     user.total_time += get_current_time() - user.start
-                    await channel.send("current_time",user.total_time,"start time",user.start)
-#                    await channel.send("You left the channel")
-                    
+                    #await channel.send("left");
+
+                '''else:
+                    user.total_time += get_current_time() - user.start
+                    await channel.send("total time",user.total_time,"start time",user.start)
+                    await channel.send("You left the channel")
+                '''
+                #else if after.channel is None:
+                #    await channel.send("left");
     
     async def called_once_a_day(self):
         #print(self)
@@ -75,8 +81,8 @@ class MyClient(discord.Client):
         await channel.send(content = "everyone", allowed_mentions = allowed_mentions)
         await channel.send("Past Midnight")
         for user in users:
-            await channel.send("start {0} total {1}".format(user.start,user.total_time))
-            user.total_time += 86400 - user.start
+#            await channel.send("start {0} total {1}".format(user.start,user.total_time))
+            #user.total_time += 86400 - user.start
             await channel.send("{0}    {1:.2f} / 6시간".format(user.name,user.total_time/3600))
             user.reset()
     
